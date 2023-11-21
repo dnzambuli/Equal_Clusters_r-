@@ -1,0 +1,118 @@
+---
+title: "Equal Clusters"
+author: "Nzambuli Daniel"
+date: "2023-11-21"
+output: html_document
+---
+
+# Data
+
+```{r}
+cluster_1 = c(1, 2, 1, 3, 3, 2, 1, 4, 1, 1)
+cluster_2 = c(1, 3, 2, 2, 3, 1, 4, 1, 1, 2)
+cluster_3 = c(2, 1, 1, 1,1, 3, 2, 1, 3, 1)
+cluster_4 = c(1, 1, 3, 2, 1, 5, 1, 2, 3, 1)
+data_1 = data.frame(clusters = c(rep("cluster_1", 10),
+                               rep("cluster_2", 10),
+                               rep("cluster_3", 10),
+                               rep("cluster_4", 10)),
+                  newspapers = c(cluster_1, cluster_2, cluster_3, cluster_4))
+data_1
+```
+
+## Pivot the data 
+
+```{r}
+library(dplyr)
+data_2 = data_1 %>% group_by(clusters) %>%
+  summarise(mean = mean(newspapers),
+            std = sd(newspapers))
+data_2
+```
+
+## Mean of news papers in every household
+
+```{r}
+mean_house_newspaper = sum(data_2$mean)/ 4
+mean_house_newspaper
+```
+
+`2` news papers are read in each house
+
+## Anova analysis
+
+use one sided anova to analyse the variance across the clusters.
+
+```{r}
+model = aov(newspapers~clusters, data = data_1)
+summary(model)
+```
+
+## Variance estimate of population mean 
+
+$$
+var\ estimate\ mean = \hat{V}(\bar{y}_c) = (1 - \frac{n}{N}) * \frac{1}{n * m} * ms
+$$
+
+```{r}
+ms = 0.3583
+n = 4
+N = 400
+m = 10 # equal population size
+
+var_eq_clust = (1 - n/N) * (1/ (n * m)) * ms
+var_eq_clust
+```
+
+## Confidence Interval / Error Estimate 
+
+$$
+CI = 2 * \sqrt{\hat{v}(\bar{y}_c}
+$$
+
+```{r}
+conf_int_eq_cluster = 2 * sqrt(var_eq_clust)
+conf_int_eq_cluster
+```
+
+The confidence interval for the mean estimates for the total mean is $1.875 \pm 0.1883393$
+
+## Standard Error
+
+mean squared error is the residual for `mean_sq`
+
+Therefore the mean squared error is `1.2028`
+
+# Challenge 
+
+suppose from a total of `20` bearing trees of guava in a village, `5 clusters` of size 4 trees each where selected and (hypothetical) yield (in kgs) is as given
+
+```{r}
+clust_1 = c(5, 4, 1, 15)
+clust_2 = c(11, 1, 4, 7)
+clust_3 = c(36, 10, 19, 11)
+clust_4 = c(7, 15, 12, 10)
+clust_5 = c(2, 22, 8, 6)
+
+chall_data = data.frame(clusters = c(rep("cluster_1", 4),
+                                     rep("cluster_2", 4),
+                                     rep("cluster_3", 4),
+                                     rep("cluster_4", 4),
+                                     rep("cluster_5", 4)),
+                        trees = c(clust_1, clust_2, clust_3, clust_4, clust_5))
+head(chall_data)
+```
+
+### mean per cluster
+
+```{r}
+chall_data_2 = chall_data %>% group_by(clusters) %>%
+  summarise(mean = mean(trees),
+            std = sd(trees))
+chall_data_2
+```
+
+```{r}
+yield_per_tree = sum(chall_data_2$mean)/ nrow(chall_data_2)
+yield_per_tree
+```
